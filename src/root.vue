@@ -1,8 +1,14 @@
 <script setup>
-    import { useHeadSafe } from '@unhead/vue'
+    import { useHead } from '@unhead/vue'
 
-    useHeadSafe({
+    useHead({
       title: 'hello world',
+      script: [
+        {
+          type: 'application/json',
+          innerHTML: { dangerous: '<' + '/script>' }
+        }
+      ]
     });
 </script>
 
