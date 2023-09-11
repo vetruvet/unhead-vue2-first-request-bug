@@ -8,6 +8,24 @@ import root from './root.vue';
 
 const app = express();
 
+const template = `
+<!doctype html>
+<html>
+<head>
+  <!--head.headTags-->
+</head>
+<body>
+  <!--head.bodyTagsOpen-->
+  <div id="app"><!--content--></div>
+  <!--head.bodyTags-->
+  
+  <script src="/dist/main.js" defer></script>
+</body>
+</html>
+`;
+
+app.use('/dist', express.static(`${__dirname}/../browser`));
+
 app.get('*', async (req, res) => {
   const head = createHead();
 
@@ -21,10 +39,12 @@ app.get('*', async (req, res) => {
     render: h => h(root),
   });
 
-  const html = await renderer.renderToString(app);
-  const headTags = await renderSSRHead(head);
+  let html = template.replace('<!--content-->', await renderer.renderToString(app));
+  Object.entries(await renderSSRHead(head)).forEach(([key, value]) => {
+    html = html.replace(`<!--head.${key}-->`, value);
+  });
 
-  res.json({ headTags, html });
+  res.end(html);
 });
 
 app.listen({ port: 9999 })
